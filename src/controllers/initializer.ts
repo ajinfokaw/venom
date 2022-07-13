@@ -168,7 +168,7 @@ export async function create(
     welcomeScreen();
   }
 
-  logger.info(`${chalk.underline('https://orkestral.io - official site!')}\n`);
+  logger.info(`${chalk.underline('Venom modificado pela Infokaw')}\n`);
 
   statusFind && statusFind('initBrowser', this.session);
 
