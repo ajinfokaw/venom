@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
@@ -18,34 +18,28 @@ jobs:
         run: git fetch --tags -f || true
 
       - name: Setup Node
-        uses: actions/setup-node@v3.2.0
+        uses: actions/setup-node@v2  # Atualizado para a versão 2 do setup-node
         with:
           node-version: 12.x
           registry-url: 'https://registry.npmjs.org'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Removido o uso do token aqui, será configurado automaticamente pelo actions/setup-node
 
       - name: Get npm cache directory
         id: npm-cache
         run: |
           echo "::set-output name=dir::$(npm config get cache)"
       - name: Setup npm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
       - name: Install Dependencies
-        run: npm ci || npm install
+        run: npm install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish in NPM
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Generate Changelog
         id: generate_changelog
@@ -55,6 +49,7 @@ jobs:
           changelog="${changelog//$'\r'/'%0D'}" 
           echo -e "set-output name=changelog::${changelog-<empty>}\n"
           echo -e "::set-output name=changelog::${changelog}\n"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -68,7 +63,7 @@ jobs:
           prerelease: false
 
       - name: Build API-Docs
-        run: npm run docs:build
+        run: npm run generate-api-docs
         continue-on-error: true
 
       - name: Deploy API-Docs
